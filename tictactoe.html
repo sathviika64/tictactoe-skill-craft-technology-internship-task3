@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      border: 2px solid #333;
+      transition: background-color 0.3s;
+    }
+
+    .cell:hover {
+      background-color: #eee;
+    }
+
+    #controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tic Tac Toe</h1>
+  
+  <!-- Game Board -->
+  <div id="game-board"></div>
+
+  <!-- Game Controls -->
+  <div id="controls">
+    <button id="restart-btn">Restart Game</button>
+    <button id="play-vs-computer-btn">Play vs Computer</button>
+  </div>
+
+  <!-- Status Message -->
+  <div id="status"></div>
+
+  <script>
+    const boardElement = document.getElementById('game-board');
+    const statusElement = document.getElementById('status');
+    const restartBtn = document.getElementById('restart-btn');
+    const playVsComputerBtn = document.getElementById('play-vs-computer-btn');
+    let board;
+    let currentPlayer;
+    let gameActive;
+    let againstComputer;
+
+    // Winning combinations
+    const winCombinations = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    // Initialize the game
+    function initGame(vsComputer = false) {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameActive = true;
+      againstComputer = vsComputer;
+      boardElement.innerHTML = '';
+      statusElement.textContent = Player ${currentPlayer}'s turn;
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.setAttribute('data-index', i);
+        cell.addEventListener('click', handleCellClick);
+        boardElement.appendChild(cell);
+      }
+    }
+
+    // Handle cell click
+    function handleCellClick(e) {
+      const index = e.target.getAttribute('data-index');
+
+      if (board[index] !== '' || !gameActive) {
+        return;
+      }
+
+      updateBoard(index);
+      checkResult();
+
+      if (againstComputer && currentPlayer === 'O' && gameActive) {
+        setTimeout(computerMove, 500);
+      }
+    }
+
+    // Update the board
+    function updateBoard(index) {
+      board[index] = currentPlayer;
+      document.querySelector([data-index='${index}']).textContent = currentPlayer;
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      statusElement.textContent = Player ${currentPlayer}'s turn;
+    }
+
+    // Check for winner or draw
+    function checkResult() {
+      let roundWon = false;
+
+      for (let i = 0; i < winCombinations.length; i++) {
+        const [a, b, c] = winCombinations[i];
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          roundWon = true;
+          break;
+        }
+      }
+
+      if (roundWon) {
+        gameActive = false;
+        statusElement.textContent = Player ${currentPlayer === 'X' ? 'O' : 'X'} wins!;
+        return;
+      }
+
+      if (!board.includes('')) {
+        gameActive = false;
+        statusElement.textContent = "It's a draw!";
+      }
+    }
+
+    // Computer move
+    function computerMove() {
+      let availableCells = board
+        .map((cell, index) => (cell === '' ? index : null))
+        .filter(index => index !== null);
+
+      if (availableCells.length > 0) {
+        const randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+        updateBoard(randomIndex);
+        checkResult();
+      }
+    }
+
+    // Restart the game
+    restartBtn.addEventListener('click', () => initGame());
+
+    // Start a game against the computer
+    playVsComputerBtn.addEventListener('click', () => initGame(true));
+
+    // Initialize game on load
+    initGame();
+  </script>
+  
+</body>
+</html>
